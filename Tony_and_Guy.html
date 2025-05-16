@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Toni &amp; Guy | Strategic Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <style>
+        :root {
+            --midnight-blue: #00338D;
+            --light-blue: #ccd7ed;
+            --medium-blue: #7a94c9;
+            --dark-blue: #001a47;
+            --light-gray: #f5f5f5;
+            --text-gray: #555555;
+            --highlight: #ffc107;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background-color: white;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-color: var(--midnight-blue);
+            color: white;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .date {
+            font-size: 14px;
+        }
+
+        h1 {
+            color: var(--midnight-blue);
+            margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 28px;
+            border-bottom: 3px solid var(--midnight-blue);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            color: var(--midnight-blue);
+            margin: 25px 0 15px;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .executive-summary {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-left: 4px solid var(--midnight-blue);
+            margin-bottom: 30px;
+        }
+
+        .key-insight {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .key-insight h3 {
+            color: var(--midnight-blue);
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .dashboard-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .chart-container {
+            flex: 1;
+            min-width: 300px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            color: var(--midnight-blue);
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        canvas {
+            width: 100% !important;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        th,
+        td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background-color: var(--midnight-blue);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light-gray);
+        }
+
+        .next-steps {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background-color: var(--midnight-blue);
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--midnight-blue);
+        }
+
+        .highlight {
+            color: var(--midnight-blue);
+            font-weight: 600;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--midnight-blue);
+            margin: 10px 0;
+        }
+
+        .kpi-label {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        .kpi-trend {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .trend-up {
+            color: #28a745;
+        }
+
+        .trend-down {
+            color: #dc3545;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding: 20px 0;
+            background-color: var(--midnight-blue);
+            color: white;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-row {
+                flex-direction: column !important;
+            }
+
+            .chart-container {
+                min-width: 100% !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo"><img alt="Toni &amp; Guy brand logo in white on black background" src="Picture1.jpg"
+                        style="height:60px;" /></div>
+                <div class="date">Strategic Dashboard - May 15, 2025</div>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <h1>CUSTOMER EXPERIENCE TRANSFORMATION INITIATIVE</h1>
+        <div class="executive-summary">
+            <h2>Executive Summary</h2>
+            <p>The opportunity to capture <span class="highlight">20-30% incremental revenue</span> exists by
+                strategically pivoting toward the untapped middle-class, occasion-driven market segment through a
+                systematic experience transformation.</p>
+        </div>
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Addressable Market</div>
+                <div class="kpi-value">56%</div>
+                <div class="kpi-trend">Urban Indian men and women (25–45 years)</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Occasion-based Spending</div>
+                <div class="kpi-value">31%</div>
+                <div class="kpi-trend">Of total grooming expenditure</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">YoY Growth</div>
+                <div class="kpi-value">15-20%</div>
+                <div class="kpi-trend trend-up">In Tier-1 &amp; Tier-2 cities</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Potential Revenue Uplift</div>
+                <div class="kpi-value">22%</div>
+                <div class="kpi-trend trend-up">From occasion packages</div>
+            </div>
+        </div>
+        <h2>Strategic Imperatives</h2>
+        <div class="key-insights">
+            <div class="key-insight">
+                <h3>Addressable Market Gap</h3>
+                <p>Data indicates 56% of urban Indian men and women (25–45) visit salons 3+ times annually, with 31% of
+                    spend allocated to special occasions.</p>
+            </div>
+            <div class="key-insight">
+                <h3>Experience Friction Points</h3>
+                <p>Current CX creates barriers through language limitations, process opacity, and suboptimal
+                    personalization.</p>
+            </div>
+            <div class="key-insight">
+                <h3>Competitive Differentiation</h3>
+                <p>Opportunity to redefine premium positioning through inclusive, tech-enabled experiences rather than
+                    price point alone.</p>
+            </div>
+            <div class="key-insight">
+                <h3>Financial Upside</h3>
+                <p>Potential 15-22% revenue uplift with corresponding CAC reduction of 8-20% across initiative
+                    portfolio.</p>
+            </div>
+        </div>
+        <div class="dashboard-row">
+            <div class="chart-container">
+                <div class="chart-title">Initiative Impact on Key Metrics</div>
+                <canvas id="impactChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Revenue Projection by Initiative</div>
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+        <div class="dashboard-row">
+            <div class="chart-container">
+                <div class="chart-title">Customer Acquisition Cost Reduction</div>
+                <canvas id="cacChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <div class="chart-title">Lifetime Value Increase</div>
+                <canvas id="ltvChart"></canvas>
+            </div>
+        </div>
+        <h2>Transformation Roadmap</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Phase</th>
+                    <th>Duration</th>
+                    <th>Initiative</th>
+                    <th>Expected Outcome</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Phase 1: Foundation Building</td>
+                    <td>0-3 months</td>
+                    <td>Visual journey mapping, A/B testing</td>
+                    <td>18% customer acquisition increase, 15% CAC reduction</td>
+                </tr>
+                <tr>
+                    <td>Phase 2: Digital Acceleration</td>
+                    <td>3-6 months</td>
+                    <td>AI multilingual service, Occasions program</td>
+                    <td>10% revenue increase in target locations</td>
+                </tr>
+                <tr>
+                    <td>Phase 3: Ecosystem Integration</td>
+                    <td>6-12 months</td>
+                    <td>Dashboard deployment, National rollout</td>
+                    <td>Comprehensive analytics, 25% LTV increase</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="chart-container" style="width: 100%;">
+            <div class="chart-title">Implementation Complexity vs. Financial Impact Matrix</div>
+            <canvas id="matrixChart"></canvas>
+        </div>
+        <h2>Salon Hierarchy &amp; Doodling AI Innovation</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Responsibility</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Salon Director</td>
+                    <td>Final decision-maker, client escalations</td>
+                    <td>High touch client relationships</td>
+                </tr>
+                <tr>
+                    <td>Senior Stylists</td>
+                    <td>Handle high-paying clients, supervise juniors</td>
+                    <td>Trained in premium services</td>
+                </tr>
+                <tr>
+                    <td>Junior Stylists</td>
+                    <td>Cut, color, standard services</td>
+                    <td>Need upskilling in sales &amp; CX</td>
+                </tr>
+                <tr>
+                    <td>Front Desk/CRM</td>
+                    <td>Booking, customer interaction, feedback loop</td>
+                    <td>Crucial for personalization UX</td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="key-insight">
+            <h3>Doodling AI Mirror Feature</h3>
+            <p>Introducing the 'MirrorSketch' AI station, allowing clients to visually express desired styles. Enhances
+                clarity, reduces rework, and increases satisfaction. Expected 10–15% revenue uplift through
+                personalization and social media virality.</p>
+        </div>
+        <div class="next-steps">
+            <h2>Next Steps</h2>
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <div class="step-title">Prioritize initiatives</div>
+                    <p>Based on implementation complexity vs. financial impact matrix</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <div class="step-title">Establish baseline metrics</div>
+                    <p>For accurate ROI tracking</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <div class="step-title">Design pilot program<a href="#ai-visual-section"
+                            style="color:#00338D; text-decoration:underline;"> See AI Visual Section</a></div>
+                    <p>With clear success criteria</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <div class="step-title">Develop stakeholder alignment</div>
+                    <p>Strategy for frontline staff buy-in</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="dashboard-row" id="ai-visual-section"
+        style="margin-top: 40px; display: flex; flex-wrap: wrap; gap: 20px;">
+        <div class="chart-container" style="flex: 1;">
+            <div class="chart-title">MirrorSketch: AI-Powered Grooming Preview</div><img
+                alt="Customer using AI mirror to visualize different beard styles and colors" src="AI_Image.jpg"
+                style="width:100%; border-radius: 5px;" />
+        </div>
+        <div class="chart-container" style="flex: 1;">
+            <div class="chart-title">Creative AI Styling Concept – Beyond Human Hair</div><img
+                alt="Holographic AI system displaying dog grooming styles for futuristic concept" src="Grooming_1.webp"
+                style="width:100%; border-radius: 5px;" />
+        </div>
+    </div>
+    <div style="margin-top: 40px; padding: 20px; background-color: #f5f5f5; border-left: 4px solid #00338D;">
+        <h2>Presented By</h2>
+        <ul style="list-style: disc; padding-left: 20px;">
+            <li>Vishesh</li>
+            <li>Digvijay</li>
+            <li>Sai Charan</li>
+            <li>Vishal</li>
+        </ul>
+    </div>
+    <footer>
+        <div class="container">
+            <p>In my experience, companies that successfully implement such transformative CX initiatives achieve 1.5-2x
+                the projected revenue impact through second-order effects.</p>
+        </div>
+    </footer>
+    <script>
+        // Impact Chart
+        const impactCtx = document.getElementById('impactChart').getContext('2d');
+        const impactChart = new Chart(impactCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Visual Journey', 'AI Multilingual', 'Occasion Package', 'Interactive Dashboards'],
+                datasets: [
+                    {
+                        label: 'Customer Acquisition',
+                        data: [18, 25, 30, 10],
+                        backgroundColor: '#00338D',
+                    },
+                    {
+                        label: 'Revenue Impact',
+                        data: [12, 17, 22, 8],
+                        backgroundColor: '#7a94c9',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Revenue Chart
+        const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: ['Month 1', 'Month 3', 'Month 6', 'Month 9', 'Month 12'],
+                datasets: [
+                    {
+                        label: 'Visual Journey',
+                        data: [2, 5, 8, 10, 12],
+                        borderColor: '#00338D',
+                        tension: 0.4,
+                        fill: false
+                    },
+                    {
+                        label: 'AI Multilingual',
+                        data: [0, 0, 8, 13, 17],
+                        borderColor: '#7a94c9',
+                        tension: 0.4,
+                        fill: false
+                    },
+                    {
+                        label: 'Occasion Package',
+                        data: [0, 0, 5, 15, 22],
+                        borderColor: '#ccd7ed',
+                        tension: 0.4,
+                        fill: false
+                    },
+                    {
+                        label: 'Interactive Dashboards',
+                        data: [0, 0, 0, 3, 8],
+                        borderColor: '#001a47',
+                        tension: 0.4,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Revenue Increase (%)'
+                        }
+                    }
+                }
+            }
+        });
+
+        // CAC Chart
+        const cacCtx = document.getElementById('cacChart').getContext('2d');
+        const cacChart = new Chart(cacCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Visual Journey', 'AI Multilingual', 'Occasion Package', 'Interactive Dashboards'],
+                datasets: [{
+                    label: 'CAC Reduction',
+                    data: [15, 20, 10, 8],
+                    backgroundColor: '#00338D',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // LTV Chart
+        const ltvCtx = document.getElementById('ltvChart').getContext('2d');
+        const ltvChart = new Chart(ltvCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Visual Journey', 'AI Multilingual', 'Occasion Package', 'Interactive Dashboards'],
+                datasets: [{
+                    label: 'LTV Increase',
+                    data: [10, 15, 25, 12],
+                    backgroundColor: '#7a94c9',
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Matrix Chart (Bubble chart for complexity vs impact)
+        const matrixCtx = document.getElementById('matrixChart').getContext('2d');
+        const matrixChart = new Chart(matrixCtx, {
+            type: 'bubble',
+            data: {
+                datasets: [
+                    {
+                        label: 'Visual Journey Mapping',
+                        data: [{
+                            x: 3, // Medium complexity
+                            y: 12, // Revenue impact 12%
+                            r: 15 // Size based on overall value
+                        }],
+                        backgroundColor: 'rgba(0, 51, 141, 0.7)',
+                    },
+                    {
+                        label: 'AI Multilingual Platform',
+                        data: [{
+                            x: 7, // High complexity
+                            y: 17, // Revenue impact 17%
+                            r: 20 // Size based on overall value
+                        }],
+                        backgroundColor: 'rgba(122, 148, 201, 0.7)',
+                    },
+                    {
+                        label: 'Occasion Package',
+                        data: [{
+                            x: 5, // Medium-high complexity
+                            y: 22, // Revenue impact 22%
+                            r: 25 // Size based on overall value
+                        }],
+                        backgroundColor: 'rgba(204, 215, 237, 0.7)',
+                    },
+                    {
+                        label: 'Interactive Dashboards',
+                        data: [{
+                            x: 4, // Medium complexity
+                            y: 8, // Revenue impact 8%
+                            r: 12 // Size based on overall value
+                        }],
+                        backgroundColor: 'rgba(0, 26, 71, 0.7)',
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (context) {
+                                return [
+                                    context.raw.y + '% Revenue Impact',
+                                    'Implementation Complexity: ' + context.raw.x + '/10'
+                                ];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        min: 0,
+                        max: 10,
+                        title: {
+                            display: true,
+                            text: 'Implementation Complexity'
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 25,
+                        title: {
+                            display: true,
+                            text: 'Financial Impact (%)'
+                        },
+                        ticks: {
+                            callback: function (value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
